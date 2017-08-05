@@ -56,3 +56,22 @@ function showFPS(t0, t, targetDiv) {
     const fps = 1000.0 / ((t - t0) === 0 ? 1 : (t - t0));
     targetDiv.text("FPS = " + fps);
 }
+
+var projectionMatrix, modelViewMatrix;
+
+function initMatrices() {
+    // The transform matrix for the square - translate back in Z for the camera
+    modelViewMatrix = new Float32Array(
+        [1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, -3.333, 1]);
+
+    // The projection matrix (for a 45 degree field of view)
+    projectionMatrix = new Float32Array(
+        [2.41421, 0, 0, 0,
+            0, 2.41421, 0, 0,
+            0, 0, -1.002002, -1,
+            0, 0, -0.2002002, 0]);
+
+}
