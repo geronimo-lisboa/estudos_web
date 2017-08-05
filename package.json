@@ -1,0 +1,9 @@
+{
+  "name": "a_cube",
+  "version": "0.0.0",
+  "description": "A_Cube",
+  "main": "server.js",
+  "author": {
+    "name": "lucia"
+  }
+}
