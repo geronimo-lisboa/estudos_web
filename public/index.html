@@ -6,6 +6,34 @@
 <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.teal-red.min.css">
 <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <!--Fim do Material Design Lite-->
+<!-- Começo do jquery-->
+<script
+    src="http://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+<!-- Fim do jquery-->
+<script type="text/javascript" src="opengl.js"></script>
+<script type="text/javascript">
+    //O contexto do opengl
+    var gl = undefined;
+    //Onde desenho os quadros
+    function drawFrame() {
+        const t0 = (new Date()).getTime();
+        //....
+        const t = (new Date()).getTime();
+        showFPS(t0, t, $("#saida_fps"));
+        requestAnimationFrame(drawFrame);
+    }
+    //Coisas a fazer no callback da carga
+    window.onload = function () {
+        let canvas = document.getElementById("webglcanvas");
+        //Inicialização do webgl
+        gl = initWebGL(canvas); 
+        initViewport(gl, canvas.width, canvas.height);
+        //...
+        requestAnimationFrame(drawFrame);
+    }
+</script>
 <head>
     <meta charset="utf-8"/>
     <title></title>
@@ -20,7 +48,7 @@
                 <strong>Cena</strong>
             </div>
             <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--stretch">
-                <canvas width="400" height="400"></canvas>
+                <canvas id="webglcanvas" width="400" height="400"></canvas>
             </div>
         </div>
         <div class="mdl-cell mdl-shadow--2dp mdl-cell--6-col">
@@ -38,7 +66,7 @@
             <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Intensidade da luz</div>
         </div>
         <div class="mdl-shadow--2dp mdl-cell--bottom mdl-cell--12-col">
-            FPS:
+            <div id="saida_fps" class="mdl-cell mdl-shadow--2dp">FPS: </div>
         </div>
     </div>
 </body>
