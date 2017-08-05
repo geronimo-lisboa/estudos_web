@@ -1,6 +1,6 @@
-﻿var http = require('http');
-var port = process.env.port || 1337;
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello World\n');
-}).listen(port);
+﻿//pega a biblioteca express
+var express = require('express'); 
+//Cria o objeto do servidor usando a biblioteca
+var server = express(); 
+server.use(express.static(__dirname + '/public'));
+server.listen(8080);
