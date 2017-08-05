@@ -19,7 +19,8 @@
     //Onde desenho os quadros
     function drawFrame() {
         const t0 = (new Date()).getTime();
-        //....
+        gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         const t = (new Date()).getTime();
         showFPS(t0, t, $("#saida_fps"));
         requestAnimationFrame(drawFrame);
