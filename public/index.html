@@ -15,23 +15,27 @@
 <script type="text/javascript" src="opengl.js"></script>
 <script type="text/javascript">
     var GlobalSquare = undefined;
+    var gl = undefined;
+    var vertexShaderSource =
+        " precision highp float;\n" +
+            "    attribute vec3 vertexPos;\n" +
+            "    attribute vec4 vertexColor;\n" +
+            "    uniform mat4 modelViewMatrix;\n" +
+            "    uniform mat4 projectionMatrix;\n" +
+            "    varying vec4 vColor;\n" +
+            "    void main(void) {\n" +
+            "        vColor = vertexColor;\n" +
+            "        gl_Position = projectionMatrix * modelViewMatrix * \n" +
+            "            vec4(vertexPos, 1.0);\n" +
+            "    }\n";
+    var fragmentShaderSource =
+        " precision highp float;\n" +
+            "varying vec4 vColor;\n" +
+            "void main(void) {\n" +
+            "    // Return the pixel color: always output white\n" +
+            "    gl_FragColor = vColor;\n" +
+            "}\n";
     var projectionMatrix, modelViewMatrix;
-    function initMatrices() {
-        // The transform matrix for the square - translate back in Z for the camera
-        modelViewMatrix = new Float32Array(
-            [0.866, 0.5, 0, 0,
-             -0.5, 0.866, 0, 0,
-             0, 0, 1, 0,
-             0, 0, -3.333, 1]);
-
-        // The projection matrix (for a 45 degree field of view)
-        projectionMatrix = new Float32Array(
-            [2.41421, 0, 0, 0,
-                0, 2.41421, 0, 0,
-                0, 0, -1.002002, -1,
-                0, 0, -0.2002002, 0]);
-
-    }
     // Create the vertex data for a square to be drawn
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
@@ -53,21 +57,12 @@
                 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
                 var testeArr1 = new Float32Array(data.geometry);
                 gl.bufferData(gl.ARRAY_BUFFER, testeArr1, gl.STATIC_DRAW);
-
                 var colorBuffer = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
                 var testeArr2 = new Float32Array(data.color);
                 gl.bufferData(gl.ARRAY_BUFFER, testeArr2, gl.STATIC_DRAW);
-
+                //O shader é inicializado aqui.
                 var shaderProgram = initShader(gl, vertexShaderSource, fragmentShaderSource);
-                //Ponteiros para os parâmetros do shader
-                var shaderVertexPositionAttribute = gl.getAttribLocation(shaderProgram, "vertexPos");
-                gl.enableVertexAttribArray(shaderVertexPositionAttribute);
-                var shaderVertexColorAttribute = gl.getAttribLocation(shaderProgram, "vertexColor");
-                gl.enableVertexAttribArray(shaderVertexColorAttribute);
-                var shaderProjectionMatrixUniform = gl.getUniformLocation(shaderProgram, "projectionMatrix");
-                var shaderModelViewMatrixUniform = gl.getUniformLocation(shaderProgram, "modelViewMatrix");
-
                 var square = {
                     buffer: vertexBuffer,
                     cBuffer: colorBuffer,
@@ -75,12 +70,13 @@
                     nVerts: data.numVertices,
                     primtype: gl.TRIANGLES,
                     shaderProgram: shaderProgram,
-                    shaderVertexPositionAttribute: shaderVertexPositionAttribute,
-                    shaderVertexColorAttribute: shaderVertexColorAttribute,
-                    shaderProjectionMatrixUniform : shaderProjectionMatrixUniform,
-                    shaderModelViewMatrixUniform:shaderModelViewMatrixUniform
+                    shaderVertexPositionAttribute: gl.getAttribLocation(shaderProgram, "vertexPos"),
+                    shaderVertexColorAttribute: gl.getAttribLocation(shaderProgram, "vertexColor"),
+                    shaderProjectionMatrixUniform: gl.getUniformLocation(shaderProgram, "projectionMatrix"),
+                    shaderModelViewMatrixUniform: gl.getUniformLocation(shaderProgram, "modelViewMatrix")
                 };
-
+                gl.enableVertexAttribArray(square.shaderVertexPositionAttribute);
+                gl.enableVertexAttribArray(square.shaderVertexColorAttribute);
                 GlobalSquare = square;
                 return square;
             })
@@ -88,105 +84,79 @@
                     alert(error);
                 }
             );
-
     }
-    var vertexShaderSource =
-        " precision highp float;\n" +
-            "    attribute vec3 vertexPos;\n" +
-            "    attribute vec4 vertexColor;\n"+
-            "    uniform mat4 modelViewMatrix;\n" +
-            "    uniform mat4 projectionMatrix;\n" +
-            "    varying vec4 vColor;\n"+
-            "    void main(void) {\n" +
-            "        vColor = vertexColor;\n"+
-            "        gl_Position = projectionMatrix * modelViewMatrix * \n" +
-            "            vec4(vertexPos, 1.0);\n" +
-            "    }\n";
-    var fragmentShaderSource =
-        " precision highp float;\n" +
-            "varying vec4 vColor;\n"+
-            "void main(void) {\n" +
-            "    // Return the pixel color: always output white\n" +
-            "    gl_FragColor = vColor;\n" +
-            "}\n";
-
-    function draw(gl, obj) {
+    //function draw(gl, obj) {
+    function draw() {
+        const t0 = Date.now();
         if (GlobalSquare) {
             // clear the background (with black)
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             // set the vertex buffer to be drawn
-            gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer);
+            gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.buffer);
             // set the shader to use
-            gl.useProgram(obj.shaderProgram);
+            gl.useProgram(GlobalSquare.shaderProgram);
             // connect up the shader parameters: vertex position and projection/model matrices
-            gl.vertexAttribPointer(obj.shaderVertexPositionAttribute, obj.vertSize, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, obj.cBuffer);
-            gl.vertexAttribPointer(obj.shaderVertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
-
-            gl.uniformMatrix4fv(obj.shaderProjectionMatrixUniform, false, projectionMatrix);
-            gl.uniformMatrix4fv(obj.shaderModelViewMatrixUniform, false, modelViewMatrix);
-            // draw the object
-            gl.drawArrays(obj.primtype, 0, obj.nVerts);
+            gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
+            gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
+            gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, projectionMatrix);
+            gl.uniformMatrix4fv(GlobalSquare.shaderModelViewMatrixUniform, false, modelViewMatrix);
+            
+            gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
         } else {
             gl.clearColor(5.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
+        const t = Date.now();
+        const fps = t -t0;
+        $("#saida_fps").text("dT da renderizacao = " + fps + "ms");
+        requestAnimationFrame(draw);
     }
-
     window.onload = function () {
         var canvas = document.getElementById("webglcanvas");
-        var gl = initWebGL(canvas);
+        gl = initWebGL(canvas);
         initViewport(gl, canvas);
         initMatrices();
         createSquare(gl);
-
-        draw(gl, GlobalSquare);
-        //Começa a renderização. ontimerCallback é a função onde a renderização ocorre
-        var ontimerCallback = function () {
-            draw(gl, GlobalSquare);
-            setInterval(ontimerCallback, 500);
-        }
-        setInterval(ontimerCallback, 500);
+        requestAnimationFrame(draw);
     }
-
 </script>
 <head>
     <meta charset="utf-8"/>
     <title></title>
 </head>
 <body>
-    <div class="content-grid mdl-grid mdl-layout mdl-shadow--2dp ">
-        <div class="mdl-shadow--2dp mdl-cell--top mdl-cell--12-col">
-            <strong>WebGL - Um exemplo prático</strong>
+<div class="content-grid mdl-grid mdl-layout mdl-shadow--2dp ">
+    <div class="mdl-shadow--2dp mdl-cell--top mdl-cell--12-col">
+        <strong>WebGL - Um exemplo prático</strong>
+    </div>
+    <div class="mdl-cell mdl-shadow--2dp mdl-cell--6-col">
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--top">
+            <strong>Cena</strong>
         </div>
-        <div class="mdl-cell mdl-shadow--2dp mdl-cell--6-col">
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--top">
-                <strong>Cena</strong>
-            </div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--stretch">
-                <canvas id="webglcanvas" width="400" height="400"></canvas>
-            </div>
-        </div>
-        <div class="mdl-cell mdl-shadow--2dp mdl-cell--6-col">
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--top">
-                <strong>Controles</strong>
-            </div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da câmera</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Foco da câmera</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">View Up da câmera</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Tipo de Projeção</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Translação do objeto</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Rotação do objeto</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Pivot do objeto</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da luz</div>
-            <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Intensidade da luz</div>
-        </div>
-        <div class="mdl-shadow--2dp mdl-cell--bottom mdl-cell--12-col">
-            <div id="saida_fps" class="mdl-cell mdl-shadow--2dp">FPS: </div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--stretch">
+            <canvas id="webglcanvas" width="400" height="400"></canvas>
         </div>
     </div>
+    <div class="mdl-cell mdl-shadow--2dp mdl-cell--6-col">
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--top">
+            <strong>Controles</strong>
+        </div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da câmera</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Foco da câmera</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">View Up da câmera</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Tipo de Projeção</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Translação do objeto</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Rotação do objeto</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Pivot do objeto</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da luz</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Intensidade da luz</div>
+    </div>
+    <div class="mdl-shadow--2dp mdl-cell--bottom mdl-cell--12-col">
+        <div id="saida_fps" class="mdl-cell mdl-shadow--2dp">FPS: </div>
+    </div>
+</div>
 </body>
 
 </html>
