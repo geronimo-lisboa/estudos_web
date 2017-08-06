@@ -72,7 +72,7 @@
                     buffer: vertexBuffer,
                     cBuffer: colorBuffer,
                     vertSize: data.vertexSize,
-                    nVerts: data.numVertices,
+                    nVerts: (data.geometry.length/3),
                     primtype: gl.TRIANGLES,
                     shaderProgram: shaderProgram,
                     shaderVertexPositionAttribute: gl.getAttribLocation(shaderProgram, "vertexPos"),
@@ -112,7 +112,7 @@
 
             gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
 
-            mat4.rotate(modelMatrix, modelMatrix, 0.001, [0.0, 1.0, 0.0]);
+            mat4.rotate(modelMatrix, modelMatrix, 0.01, [0.0, 1.0, 0.0]);
         } else {
             gl.clearColor(5.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -125,6 +125,10 @@
     window.onload = function () {
         var canvas = document.getElementById("webglcanvas");
         gl = initWebGL(canvas);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LESS);
+
         initViewport(gl, canvas);
         initMatrices();
         createSquare(gl);
@@ -152,9 +156,25 @@
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp mdl-cell--top">
             <strong>Controles</strong>
         </div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da câmera</div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Foco da câmera</div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">View Up da câmera</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+            Posição da câmera
+            <input type="text" id="eyeX"/>
+            <input type="text" id="eyeY" />
+            <input type="text" id="eyeZ" />
+        </div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Foco da câmera
+            <input type="text" id="focusX"/>
+            <input type="text" id="focusY" />
+            <input type="text" id="focusZ" />
+        </div>
+
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+            View Up da câmera
+            <input type="text" id="vupX"/>
+            <input type="text" id="vupY" />
+            <input type="text" id="vupZ" />
+
+        </div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Tipo de Projeção</div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Translação do objeto</div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Rotação do objeto</div>
