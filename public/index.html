@@ -12,12 +12,31 @@
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
 <!-- Fim do jquery-->
+<!-- Começo da Biblioteca de matrizes para o webgl-->
+<script src="gl-matrix.js"></script>
+<!-- Fim da Biblioteca de matrizes para o webgl-->
 <script type="text/javascript" src="opengl.js"></script>
 <script type="text/javascript" src="shader.js"></script>
 <script type="text/javascript">
+    //O meu objeto
     var GlobalSquare = undefined;
+    //O contexto opengl
     var gl = undefined;
-    var projectionMatrix, modelViewMatrix;
+    //As 3 matrizes importantes
+    var projectionMatrix, modelMatrix, viewMatrix;
+
+
+    function initMatrices() {
+        modelMatrix = mat4.create();
+        viewMatrix = mat4.create();
+        projectionMatrix = mat4.create();
+        
+        mat4.perspective (projectionMatrix, 45.0, 1.0, 0.1, 100.0);
+        mat4.identity(modelMatrix);
+        mat4.identity(viewMatrix);
+
+        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, -3.0]);
+    }
     // Create the vertex data for a square to be drawn
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
@@ -55,7 +74,8 @@
                     shaderVertexPositionAttribute: gl.getAttribLocation(shaderProgram, "vertexPos"),
                     shaderVertexColorAttribute: gl.getAttribLocation(shaderProgram, "vertexColor"),
                     shaderProjectionMatrixUniform: gl.getUniformLocation(shaderProgram, "projectionMatrix"),
-                    shaderModelViewMatrixUniform: gl.getUniformLocation(shaderProgram, "modelViewMatrix")
+                    shaderViewMatrixUniform: gl.getUniformLocation(shaderProgram, "viewMatrix"),
+                    shaderModelMatrixUniform: gl.getUniformLocation(shaderProgram, "modelMatrix")
                 };
                 gl.enableVertexAttribArray(square.shaderVertexPositionAttribute);
                 gl.enableVertexAttribArray(square.shaderVertexColorAttribute);
@@ -73,7 +93,7 @@
         if (GlobalSquare) {
             // clear the background (with black)
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             // set the vertex buffer to be drawn
             gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.buffer);
             // set the shader to use
@@ -83,8 +103,9 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
             gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
             gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, projectionMatrix);
-            gl.uniformMatrix4fv(GlobalSquare.shaderModelViewMatrixUniform, false, modelViewMatrix);
-            
+            gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, viewMatrix);
+            gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, modelMatrix);
+
             gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
         } else {
             gl.clearColor(5.0, 0.0, 0.0, 1.0);

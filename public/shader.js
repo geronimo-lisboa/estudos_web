@@ -3,12 +3,13 @@ var vertexShaderSource =
     " precision highp float;\n" +
         "    attribute vec3 vertexPos;\n" +
         "    attribute vec4 vertexColor;\n" +
-        "    uniform mat4 modelViewMatrix;\n" +
+        "    uniform mat4 modelMatrix;\n" +
+        "    uniform mat4 viewMatrix;\n" +
         "    uniform mat4 projectionMatrix;\n" +
         "    varying vec4 vColor;\n" +
         "    void main(void) {\n" +
         "        vColor = vertexColor;\n" +
-        "        gl_Position = projectionMatrix * modelViewMatrix * \n" +
+        "        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
         "            vec4(vertexPos, 1.0);\n" +
         "    }\n";
 var fragmentShaderSource =
