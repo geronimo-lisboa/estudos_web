@@ -16,22 +16,7 @@
 <script type="text/javascript">
     var GlobalSquare = undefined;
     var projectionMatrix, modelViewMatrix;
-    function initMatrices() {
-        // The transform matrix for the square - translate back in Z for the camera
-        modelViewMatrix = new Float32Array(
-            [1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, -3.333, 1]);
 
-        // The projection matrix (for a 45 degree field of view)
-        projectionMatrix = new Float32Array(
-            [2.41421, 0, 0, 0,
-                0, 2.41421, 0, 0,
-                0, 0, -1.002002, -1,
-                0, 0, -0.2002002, 0]);
-
-    }
     // Create the vertex data for a square to be drawn
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
