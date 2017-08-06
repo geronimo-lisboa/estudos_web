@@ -122,6 +122,7 @@
             gl.clearColor(5.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         }
+        requestAnimationFrame(draw);
     }
 
     window.onload = function () {
@@ -131,14 +132,16 @@
         initMatrices();
         createSquare(gl);
 
-        //draw(gl, GlobalSquare);
-        draw();
-        //Começa a renderização. ontimerCallback é a função onde a renderização ocorre
-        var ontimerCallback = function () {
-            draw();
-            setInterval(ontimerCallback, 500);
-        }
-        setInterval(ontimerCallback, 500);
+        requestAnimationFrame(draw);
+
+        ////draw(gl, GlobalSquare);
+        //draw();
+        ////Começa a renderização. ontimerCallback é a função onde a renderização ocorre
+        //var ontimerCallback = function () {
+        //    draw();
+        //    setInterval(ontimerCallback, 500);
+        //}
+        //setInterval(ontimerCallback, 500);
     }
 
 </script>
