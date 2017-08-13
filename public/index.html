@@ -79,7 +79,10 @@
                 };
                 gl.enableVertexAttribArray(square.shaderVertexPositionAttribute);
                 gl.enableVertexAttribArray(square.shaderVertexColorAttribute);
+                square.pos = [0, 0, 0];
+                square.rotation = [0, 1, 0, 0];
                 GlobalSquare = square;
+                UpdateTranslate();
                 return square;
             })
             .catch(function (error) {
@@ -99,6 +102,16 @@
             // set the shader to use
             gl.useProgram(GlobalSquare.shaderProgram);
             // connect up the shader parameters: vertex position and projection/model matrices
+
+            var objAxis = [GlobalSquare.rotation[0], GlobalSquare.rotation[1], GlobalSquare.rotation[2]];
+            var objAngle = GlobalSquare.rotation[3];
+            var objTrans = GlobalSquare.pos;
+            var identityMatrix = mat4.create();
+            modelMatrix = mat4.create();
+            mat4.identity(identityMatrix);
+            mat4.identity(modelMatrix);
+            mat4.translate(modelMatrix, identityMatrix, objTrans);
+
             gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, gl.FLOAT, false, 0, 0);
             gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
             gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
@@ -141,7 +154,12 @@
         $("#eyeX").val(eye[0]); $("#eyeY").val(eye[1]); $("#eyeZ").val(eye[2]);
         $("#focusX").val(focus[0]); $("#focusY").val(focus[1]); $("#focusZ").val(focus[2]);
         $("#vupX").val(vUp[0]); $("#vupY").val(vUp[1]); $("#vupZ").val(vUp[2]);
+    }
 
+    function UpdateTranslate() {
+        $("#transX").val(GlobalSquare.pos[0]);
+        $("#transY").val(GlobalSquare.pos[1]);
+        $("#transZ").val(GlobalSquare.pos[2]);
     }
 
     function SetProjecao() {
@@ -153,10 +171,14 @@
         }
     }
 
+    function SetTranslate() {
+        GlobalSquare.pos = [parseFloat($("#transX").val()), parseFloat($("#transY").val()), parseFloat($("#transZ").val())];
+    }
+
     function SetViewMatrix() {
-        eye = [ parseInt($("#eyeX").val()), parseInt($("#eyeY").val()), parseInt($("#eyeZ").val())];
-        focus = [ parseInt($("#focusX").val()), parseInt($("#focusY").val()), parseInt($("#focusZ").val())];
-        vUp = [ parseInt($("#vupX").val()), parseInt($("#vupY").val()), parseInt($("#vupZ").val())];
+        eye = [ parseFloat($("#eyeX").val()), parseFloat($("#eyeY").val()), parseFloat($("#eyeZ").val())];
+        focus = [ parseFloat($("#focusX").val()), parseFloat($("#focusY").val()), parseFloat($("#focusZ").val())];
+        vUp = [ parseFloat($("#vupX").val()), parseFloat($("#vupY").val()), parseFloat($("#vupZ").val())];
         mat4.lookAt(viewMatrix, eye, focus, vUp);
     }
 </script>
@@ -206,7 +228,12 @@
                 <option>Ortográfica</option>
             </select>
         </div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Translação do objeto</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+            Translação do objeto
+            <input type="text" id="transX" onchange="SetTranslate()"/>
+            <input type="text" id="transY" onchange="SetTranslate()" />
+            <input type="text" id="transZ" onchange="SetTranslate()" />
+        </div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Rotação do objeto</div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Pivot do objeto</div>
         <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da luz</div>
