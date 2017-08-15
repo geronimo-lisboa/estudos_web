@@ -83,6 +83,7 @@
                 square.rotation = [0, 1, 0, 0];
                 GlobalSquare = square;
                 UpdateTranslate();
+                UpdateRotation();
                 return square;
             })
             .catch(function (error) {
@@ -111,6 +112,7 @@
             mat4.identity(identityMatrix);
             mat4.identity(modelMatrix);
             mat4.translate(modelMatrix, identityMatrix, objTrans);
+            mat4.rotate(modelMatrix, modelMatrix, objAngle * 0.0174533, objAxis);
 
             gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, gl.FLOAT, false, 0, 0);
             gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
@@ -156,6 +158,13 @@
         $("#vupX").val(vUp[0]); $("#vupY").val(vUp[1]); $("#vupZ").val(vUp[2]);
     }
 
+    function UpdateRotation() {
+        $("#rotAxisX").val(GlobalSquare.rotation[0]);
+        $("#rotAxisY").val(GlobalSquare.rotation[1]);
+        $("#rotAxisZ").val(GlobalSquare.rotation[2]);
+        $("#rotAngle").val(GlobalSquare.rotation[3]);
+    }
+
     function UpdateTranslate() {
         $("#transX").val(GlobalSquare.pos[0]);
         $("#transY").val(GlobalSquare.pos[1]);
@@ -173,6 +182,10 @@
 
     function SetTranslate() {
         GlobalSquare.pos = [parseFloat($("#transX").val()), parseFloat($("#transY").val()), parseFloat($("#transZ").val())];
+    }
+
+    function SetRotate() {
+        GlobalSquare.rotation = [parseFloat($("#rotAxisX").val()), parseFloat($("#rotAxisY").val()), parseFloat($("#rotAxisZ").val()), parseFloat($("#rotAngle").val())];
     }
 
     function SetViewMatrix() {
@@ -234,21 +247,24 @@
             <input type="text" id="transY" onchange="SetTranslate()" />
             <input type="text" id="transZ" onchange="SetTranslate()" />
         </div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Rotação do objeto</div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Pivot do objeto</div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Posição da luz</div>
-        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">Intensidade da luz</div>
+        <div class="mdl-cell mdl-cell--12-col mdl-shadow--2dp">
+            Rotação do objeto
+            <input type="text" id="rotAxisX" onchange="SetRotate()" />
+            <input type="text" id="rotAxisY" onchange="SetRotate()" />
+            <input type="text" id="rotAxisZ" onchange="SetRotate()" />
+            <input type="text" id="rotAngle" onchange="SetRotate()" />
+        </div>
     </div>
     <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
         <strong>Tarefas:</strong>
-        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
-            1)Por o cubo funcionando
+        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-color--amber-100">
+            1)Por o cubo funcionando - FEITO
+        </div>
+        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-color--amber-100">
+            2)Controlar a cena usando os controles na tela - FEITO
         </div>
         <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
-            2)Controlar a cena usando os controles na tela
-        </div>
-        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
-            3)Texturas
+            3)Texturas 
         </div>
         <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
             4)Iluminação
