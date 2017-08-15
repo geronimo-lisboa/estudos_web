@@ -41,7 +41,7 @@
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
         //como todos os IOs em js
-        var result = fetch('http://localhost:8080/testeObjeto.json')
+        var result = fetch('testeObjeto.json')
             .then(response => {//Resolve ou rejeita a promessa de carga que foi feita
                 if (response.status === 200 || response.status === 0) {
                     return Promise.resolve(response);
