@@ -81,6 +81,7 @@
                 gl.enableVertexAttribArray(square.shaderVertexColorAttribute);
                 square.pos = [0, 0, 0];
                 square.rotation = [0, 1, 0, 0];
+                square.isTexLoaded = false;
                 GlobalSquare = square;
                 UpdateTranslate();
                 UpdateRotation();
@@ -91,10 +92,37 @@
                 }
             );
     }
+
+    function handleTextureLoaded(image, texture) {
+        console.log("handleTextureLoaded, image = " + image);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+            gl.UNSIGNED_BYTE, image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        GlobalSquare.isTexLoaded = true;
+    }
+
+    //Faz a carga da textura depois que o cubo passou a existir.
+    function loadTexture() {
+        if (!GlobalSquare) {//Verificação da existência do cubo antes de proceder
+            alert('GlobalSquare não pode ser undefined nesse momento');
+        }
+        GlobalSquare.cubeTexture = gl.createTexture();
+        GlobalSquare.cubeImage = new Image();
+        GlobalSquare.cubeImage.onload = function () { handleTextureLoaded(GlobalSquare.cubeImage, GlobalSquare.cubeTexture);}
+        GlobalSquare.cubeImage.src = "marcador.png";
+    }
+
     //function draw(gl, obj) {
     function draw() {
         const t0 = Date.now();
         if (GlobalSquare) {
+            loadTexture();
+            //if (GlobalSquare.isTexLoaded)
+            //    alert('carregou');
             // clear the background (with black)
             gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -131,16 +159,20 @@
         const t = Date.now();
         const fps = t -t0;
         $("#saida_fps").text("dT da renderizacao = " + fps + "ms");
-        
         requestAnimationFrame(draw);
     }
+
     window.onload = function () {
         //as propriedades da camera
         eye = [1.0, 1.0, -3.0];
         focus = [0.0, 0.0, 0.0];
         vUp = [0.0, 1.0, 0.0];
         var canvas = document.getElementById("webglcanvas");
-        gl = initWebGL(canvas);
+        try {
+            gl = initWebGL(canvas);
+        } catch (e) {
+            alert("Unable to initialize WebGL. Your browser may not support it.");
+        } 
 
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LESS);
