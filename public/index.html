@@ -25,20 +25,19 @@
     //O contexto opengl
     //var gl = undefined;
     //As 3 matrizes importantes
-    var projectionMatrix, modelMatrix, viewMatrix;
-    var eye, focus, vUp;
+    var modelMatrix;//projectionMatrix, modelMatrix, viewMatrix;
+    //var eye, focus, vUp;
 
-    function initMatrices() {
-        //Cria as matrix como identidades
-        modelMatrix = mat4.create();
-        viewMatrix = mat4.create();
-        projectionMatrix = mat4.create();
-        //a perspectiva
-        mat4.perspective(projectionMatrix, 45.0, 1.0, 0.1, 100.0);
-        mat4.lookAt(viewMatrix, eye, focus, vUp);
-
-        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.0]);
-    }
+//    function initMatrices() {
+//        //Cria as matrix como identidades
+//        modelMatrix = mat4.create();
+//        viewMatrix = mat4.create();
+//        projectionMatrix = mat4.create();
+//        ////a perspectiva
+//        mat4.perspective(projectionMatrix, 45.0, 1.0, 0.1, 100.0);
+//        mat4.lookAt(viewMatrix, eye, focus, vUp);
+//        mat4.translate(modelMatrix, modelMatrix, [0.0, 0.0, 0.0]);
+//    }
     // Create the vertex data for a square to be drawn
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
@@ -143,12 +142,13 @@
             mat4.identity(modelMatrix);
             mat4.translate(modelMatrix, identityMatrix, objTrans);
             mat4.rotate(modelMatrix, modelMatrix, objAngle * 0.0174533, objAxis);
-
+			
+			engine.camera.setView();
             engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, engine.gl.FLOAT, false, 0, 0);
             engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
             engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, engine.gl.FLOAT, false, 0, 0);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, projectionMatrix);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, viewMatrix);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, engine.camera.projectionMatrix);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, engine.camera.viewMatrix);
             engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, modelMatrix);
 
             engine.gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
@@ -166,9 +166,9 @@
 
     window.onload = function () {
         //as propriedades da camera
-        eye = [1.0, 1.0, -3.0];
-        focus = [0.0, 0.0, 0.0];
-        vUp = [0.0, 1.0, 0.0];
+//        eye = [1.0, 1.0, -3.0];
+//       focus = [0.0, 0.0, 0.0];
+//        vUp = [0.0, 1.0, 0.0];
         var canvas = document.getElementById("webglcanvas");
         try {
 		   engine = new ToyEngine(canvas);
@@ -181,16 +181,16 @@
         //engine.gl.enable(gl.DEPTH_TEST);
         //engine.gl.depthFunc(gl.LESS);
         //initViewport(gl, canvas);
-        initMatrices();
+        //initMatrices();
         createSquare(engine.gl);
         UpdateCameraEdits();
         requestAnimationFrame(draw);
     }
     
     function UpdateCameraEdits() {
-        $("#eyeX").val(eye[0]); $("#eyeY").val(eye[1]); $("#eyeZ").val(eye[2]);
-        $("#focusX").val(focus[0]); $("#focusY").val(focus[1]); $("#focusZ").val(focus[2]);
-        $("#vupX").val(vUp[0]); $("#vupY").val(vUp[1]); $("#vupZ").val(vUp[2]);
+        $("#eyeX").val(engine.camera.eye[0]); $("#eyeY").val(engine.camera.eye[1]); $("#eyeZ").val(engine.camera.eye[2]);
+        $("#focusX").val(engine.camera.focus[0]); $("#focusY").val(engine.camera.focus[1]); $("#focusZ").val(engine.camera.focus[2]);
+        $("#vupX").val(engine.camera.viewUp[0]); $("#vupY").val(engine.camera.viewUp[1]); $("#vupZ").val(engine.camera.viewUp[2]);
     }
 
     function UpdateRotation() {
@@ -224,10 +224,11 @@
     }
 
     function SetViewMatrix() {
-        eye = [ parseFloat($("#eyeX").val()), parseFloat($("#eyeY").val()), parseFloat($("#eyeZ").val())];
-        focus = [ parseFloat($("#focusX").val()), parseFloat($("#focusY").val()), parseFloat($("#focusZ").val())];
-        vUp = [ parseFloat($("#vupX").val()), parseFloat($("#vupY").val()), parseFloat($("#vupZ").val())];
-        mat4.lookAt(viewMatrix, eye, focus, vUp);
+        engine.camera.eye = [ parseFloat($("#eyeX").val()), parseFloat($("#eyeY").val()), parseFloat($("#eyeZ").val())];
+        engine.camera.focus = [ parseFloat($("#focusX").val()), parseFloat($("#focusY").val()), parseFloat($("#focusZ").val())];
+        engine.camera.vUp = [ parseFloat($("#vupX").val()), parseFloat($("#vupY").val()), parseFloat($("#vupZ").val())];
+		engine.camera.setView();
+        //mat4.lookAt(viewMatrix, eye, focus, vUp);
     }
 </script>
 <head>

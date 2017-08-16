@@ -19,7 +19,7 @@ function ToyCamera(){
    }
    //Seta this.viewMatrix a partir dos valores de eye, focus e viewUp;
    this.setView = function(){
-       mat4.lookAt(this.viewMatrix, this.eye, this.focus, this.vUp);   
+       mat4.lookAt(this.viewMatrix, this.eye, this.focus, this.viewUp);   
    }
    this.usePerspective();
    this.setView();
