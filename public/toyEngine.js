@@ -3,6 +3,8 @@
 //e chamar setView(). Para setar projectionMatrix invoca-se usePerspective ou 
 //useOrtho. Para passar pro opengl pega-se os valores de projectionMatrix
 //e viewMatrix.
+//Serve para gerar o componente V e P da matriz MVP, que deve multiplicar
+//os vértices no vertex shader.
 function ToyCamera(){
    this.projectionMatrix = mat4.create();
    this.viewMatrix = mat4.create();
@@ -24,7 +26,21 @@ function ToyCamera(){
    this.usePerspective();
    this.setView();
 }
-
+//Classe de transformações.
+function ToyTransform(){
+	this.modelMatrix = mat4.create();
+	this.translate = [0.0, 0.0, 0.0];
+	this.pivot = [0.0, 0.0, 0,0];
+	this.rotationAxis = [0.0, 1.0, 0.0];
+	this.rotationAngle = 0.0;
+	//Rotation/scaling is around the origin. To both scale/rotate around a pivot, 
+	//you apply a negative translation to move the pivot point to the origin, apply 
+	//your scale and rotate, and then move your pivot point back. 
+	//https://gamedev.stackexchange.com/questions/61473/combining-rotation-scaling-around-a-pivot-with-translation-into-a-matrix
+	this.updateMatrix = function(){
+		
+	}
+}
 //Minha engine de brinquedo para entender webgl e javascript
 //A forma de usar é: 1)Criar a classe usando uma canvas. 2)setar a viewport
 //via initViewport().
