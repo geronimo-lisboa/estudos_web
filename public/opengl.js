@@ -2,7 +2,12 @@
 function initWebGL(canvas) {
     var gl;
     try {
-        gl = canvas.getContext("experimental-webgl");
+		//cria um contexto de webgl2
+        gl = canvas.getContext("webgl2");
+		//tentativa de previnir context lost
+		canvas.addEventListener("webglcontextlost", function(event){
+			event.preventDefault();
+		},false);
     }
     catch (e) {
         var msg = "Erro na criação do contexto: " + e.toString();
