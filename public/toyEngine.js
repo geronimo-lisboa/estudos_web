@@ -32,13 +32,17 @@ function ToyTransform(){
 	this.translate = [0.0, 0.0, 0.0];
 	this.pivot = [0.0, 0.0, 0,0];
 	this.rotationAxis = [0.0, 1.0, 0.0];
-	this.rotationAngle = 0.0;
+	this.rotationAngle = 0.0; //EM GRAUS
 	//Rotation/scaling is around the origin. To both scale/rotate around a pivot, 
 	//you apply a negative translation to move the pivot point to the origin, apply 
 	//your scale and rotate, and then move your pivot point back. 
 	//https://gamedev.stackexchange.com/questions/61473/combining-rotation-scaling-around-a-pivot-with-translation-into-a-matrix
 	this.updateMatrix = function(){
-		
+		mat4.identity(this.modelMatrix);
+		mat4.translate(this.modelMatrix, this.modelMatrix, [-this.pivot[0], -this.pivot[1], -this.pivot[2]]);
+		mat4.rotate(this.modelMatrix, this.modelMatrix, this.rotationAngle * 0.0174533, this.rotationAxis);
+		mat4.translate(this.modelMatrix, this.modelMatrix, [this.pivot[0], this.pivot[1], this.pivot[2]]);
+		mat4.translate(this.modelMatrix, this.modelMatrix, [-this.translate[0], -this.translate[1], -this.translate[2]]);		
 	}
 }
 //Minha engine de brinquedo para entender webgl e javascript
