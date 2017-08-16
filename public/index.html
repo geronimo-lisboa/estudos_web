@@ -17,11 +17,13 @@
 <!-- Fim da Biblioteca de matrizes para o webgl-->
 <script type="text/javascript" src="opengl.js"></script>
 <script type="text/javascript" src="shader.js"></script>
+<script type="text/javascript" src="toyEngine.js"></script>
 <script type="text/javascript">
+    var engine = undefined;
     //O meu objeto
     var GlobalSquare = undefined;
     //O contexto opengl
-    var gl = undefined;
+    //var gl = undefined;
     //As 3 matrizes importantes
     var projectionMatrix, modelMatrix, viewMatrix;
     var eye, focus, vUp;
@@ -95,13 +97,13 @@
 
     function handleTextureLoaded(image, texture) {
         console.log("handleTextureLoaded, image = " + image);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
-            gl.UNSIGNED_BYTE, image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        engine.gl.bindTexture(engine.gl.TEXTURE_2D, texture);
+        engine.gl.texImage2D(engine.gl.TEXTURE_2D, 0, engine.gl.RGBA, engine.gl.RGBA,
+            engine.gl.UNSIGNED_BYTE, image);
+        engine.gl.texParameteri(engine.gl.TEXTURE_2D, engine.gl.TEXTURE_MAG_FILTER, engine.gl.LINEAR);
+        engine.gl.texParameteri(engine.gl.TEXTURE_2D, engine.gl.TEXTURE_MIN_FILTER, engine.gl.LINEAR_MIPMAP_NEAREST);
+        engine.gl.generateMipmap(engine.gl.TEXTURE_2D);
+        engine.gl.bindTexture(engine.gl.TEXTURE_2D, null);
         GlobalSquare.isTexLoaded = true;
     }
 
@@ -110,7 +112,7 @@
         if (!GlobalSquare) {//Verificação da existência do cubo antes de proceder
             alert('GlobalSquare não pode ser undefined nesse momento');
         }
-        GlobalSquare.cubeTexture = gl.createTexture();
+        GlobalSquare.cubeTexture = engine.gl.createTexture();
         GlobalSquare.cubeImage = new Image();
         GlobalSquare.cubeImage.onload = function () { handleTextureLoaded(GlobalSquare.cubeImage, GlobalSquare.cubeTexture);}
         GlobalSquare.cubeImage.src = "marcador.png";
@@ -124,12 +126,12 @@
             //if (GlobalSquare.isTexLoaded)
             //    alert('carregou');
             // clear the background (with black)
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            engine.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
             // set the vertex buffer to be drawn
-            gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.buffer);
+            engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.buffer);
             // set the shader to use
-            gl.useProgram(GlobalSquare.shaderProgram);
+            engine.gl.useProgram(GlobalSquare.shaderProgram);
             // connect up the shader parameters: vertex position and projection/model matrices
 
             var objAxis = [GlobalSquare.rotation[0], GlobalSquare.rotation[1], GlobalSquare.rotation[2]];
@@ -142,19 +144,19 @@
             mat4.translate(modelMatrix, identityMatrix, objTrans);
             mat4.rotate(modelMatrix, modelMatrix, objAngle * 0.0174533, objAxis);
 
-            gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, gl.FLOAT, false, 0, 0);
-            gl.bindBuffer(gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
-            gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, gl.FLOAT, false, 0, 0);
-            gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, projectionMatrix);
-            gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, viewMatrix);
-            gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, modelMatrix);
+            engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, engine.gl.FLOAT, false, 0, 0);
+            engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
+            engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, engine.gl.FLOAT, false, 0, 0);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, projectionMatrix);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, viewMatrix);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, modelMatrix);
 
-            gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
+            engine.gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
 
             //mat4.rotate(modelMatrix, modelMatrix, 0.01, [0.0, 1.0, 0.0]);
         } else {
-            gl.clearColor(5.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            engine.gl.clearColor(5.0, 0.0, 0.0, 1.0);
+            engine.gl.clear(engine.gl.COLOR_BUFFER_BIT);
         }
         const t = Date.now();
         const fps = t -t0;
@@ -169,17 +171,18 @@
         vUp = [0.0, 1.0, 0.0];
         var canvas = document.getElementById("webglcanvas");
         try {
-            gl = initWebGL(canvas);
+		   engine = new ToyEngine(canvas);
+		  // engine.initOpenGL();
+		   engine.initViewport();            
         } catch (e) {
             alert("Unable to initialize WebGL. Your browser may not support it.");
         } 
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LESS);
-
-        initViewport(gl, canvas);
+        //engine.gl.enable(gl.DEPTH_TEST);
+        //engine.gl.depthFunc(gl.LESS);
+        //initViewport(gl, canvas);
         initMatrices();
-        createSquare(gl);
+        createSquare(engine.gl);
         UpdateCameraEdits();
         requestAnimationFrame(draw);
     }
