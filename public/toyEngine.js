@@ -135,8 +135,8 @@ function Toy3dObject() {
 		   gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexColor"]);
 		   //Atualiza a transformação
 		   this.transform.updateMatrix();
-           gl.uniformMatrix4fv(this.shaderProgram.uniforms["projectionMatrix"], false, this.camera.projectionMatrix);
-		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["viewMatrix"], false, this.camera.viewMatrix);
+           gl.uniformMatrix4fv(this.shaderProgram.uniforms["projectionMatrix"], false, camera.projectionMatrix);
+		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["viewMatrix"], false, camera.viewMatrix);
 		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["modelMatrix"], false, this.transform.modelMatrix);		   
 		   //Liga os buffers aos atributos no vertex shader
 		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
