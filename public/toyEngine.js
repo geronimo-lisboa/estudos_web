@@ -45,10 +45,20 @@ function ToyTransform() {
         mat4.translate(this.modelMatrix, this.modelMatrix, [-this.translate[0], -this.translate[1], -this.translate[2]]);
     }
 }
+
 //O objeto 3d. Um objeto 3d tem os buffers necessários para ele existir, tem uma transformação e pode ter outros 
 //objetos pendurados a ele.
-function toy3dObject() {
-    
+function Toy3dObject() {
+    //A transformação
+    this.transform = new ToyTransform();
+    //Os objetos filhos
+    this.children = [];
+    //A função de renderização
+    this.render = function(camera, parentTranform) {
+        this.children.forEach(function(element) {
+            element.render(camera, this.transform);
+        }.bind(this));
+    };
 }
 //Minha engine de brinquedo para entender webgl e javascript
 //A forma de usar é: 1)Criar a classe usando uma canvas. 2)setar a viewport
@@ -82,17 +92,19 @@ function ToyEngine(aCanvas) {
     this.tempoGasto = 0;
     //O contexto opengl 
     this.gl = this.initOpenGL();
+    //cria o root
+    this.root = new Toy3dObject();
     //a função de renderização. Renderiza o root e o root que se vire pra renderizar o resto.
     //Ele limpa o colobr buffer e o depth buffer, ordena a renderização do root e requisita
     //um novo quadro de animação;
     this.render = function () {
+        var self = this;
         const t0 = Date.now();
         engine.gl.clearColor(0.1, 0.0, 0.1, 1.0);
         engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
-        //aqui a renderização do meu objeto
+        engine.root.render(engine.camera, undefined);
         const t = Date.now();
         engine.tempoGasto = t - t0;
-        var self = this;
         requestAnimationFrame((ts) => {
             self.render();
         });
