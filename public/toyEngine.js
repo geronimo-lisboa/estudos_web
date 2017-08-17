@@ -128,8 +128,23 @@ function Toy3dObject() {
     this.render = function(gl,camera, parentTranform) {
 		//seu render
 		if(this.isReady){
-		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+		   //Bind do shader
 		   gl.useProgram(this.shaderProgram.programId);
+		   //ativa as arrays que vão receber os atributos
+		   gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexPos"]);
+		   gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexColor"]);
+		   //Atualiza a transformação
+		   this.transform.updateMatrix();
+           gl.uniformMatrix4fv(this.shaderProgram.uniforms["projectionMatrix"], false, this.camera.projectionMatrix);
+		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["viewMatrix"], false, this.camera.viewMatrix);
+		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["modelMatrix"], false, this.transform.modelMatrix);		   
+		   //Liga os buffers aos atributos no vertex shader
+		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+		   gl.vertexAttribPointer(this.shaderProgram.attributes["vertexPos"], 3, gl.FLOAT, false, 0, 0);
+           gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+           gl.vertexAttribPointer(this.shaderProgram.attributes["vertexColor"], 4, gl.FLOAT, false, 0, 0);
+		   //Desenha
+		   gl.drawArrays(this.primtype, 0, this.vertexes.length/3);
 		}
 		//Render dos filhos
         this.children.forEach(function(element) {
