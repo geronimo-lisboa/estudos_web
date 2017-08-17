@@ -104,51 +104,46 @@
         GlobalSquare.cubeImage.src = "marcador.png";
     }
 
-    //function draw(gl, obj) {
-    function draw() {
-        const t0 = Date.now();
-        if (GlobalSquare) {
-            loadTexture();
-            //if (GlobalSquare.isTexLoaded)
-            //    alert('carregou');
-            // clear the background (with black)
-            engine.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
-            // set the vertex buffer to be drawn
-            engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.buffer);
-            // set the shader to use
-            engine.gl.useProgram(GlobalSquare.shaderProgram);
-            
-            var objAxis = [GlobalSquare.rotation[0], GlobalSquare.rotation[1], GlobalSquare.rotation[2]];
-            var objAngle = GlobalSquare.rotation[3];
-            var objTrans = GlobalSquare.pos;
-
-            transform.pivot = [-0.5, 0.0, 0.0];
-            transform.rotationAngle = objAngle;
-            transform.rotationAxis = objAxis;
-            transform.translate = objTrans;
-            transform.updateMatrix();
-
-			
-            engine.camera.setView();
-			// connect up the shader parameters: vertex position and projection/model matrices
-            engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, engine.gl.FLOAT, false, 0, 0);
-            engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
-            engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, engine.gl.FLOAT, false, 0, 0);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, engine.camera.projectionMatrix);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, engine.camera.viewMatrix);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, transform.modelMatrix);
-
-            engine.gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
-        } else {
-            engine.gl.clearColor(5.0, 0.0, 0.0, 1.0);
-            engine.gl.clear(engine.gl.COLOR_BUFFER_BIT);
-        }
-        const t = Date.now();
-        const fps = t -t0;
-        $("#saida_fps").text("dT da renderizacao = " + fps + "ms");
-        requestAnimationFrame(draw);
-    }
+    ////function draw(gl, obj) {
+    //function draw() {
+    //    const t0 = Date.now();
+    //    if (GlobalSquare) {
+    //        loadTexture();
+    //        //if (GlobalSquare.isTexLoaded)
+    //        //    alert('carregou');
+    //        // clear the background (with black)
+    //        engine.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    //        engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
+    //        // set the vertex buffer to be drawn
+    //        engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.buffer);
+    //        // set the shader to use
+    //        engine.gl.useProgram(GlobalSquare.shaderProgram);
+    //        var objAxis = [GlobalSquare.rotation[0], GlobalSquare.rotation[1], GlobalSquare.rotation[2]];
+    //        var objAngle = GlobalSquare.rotation[3];
+    //        var objTrans = GlobalSquare.pos;
+    //        transform.pivot = [-0.5, 0.0, 0.0];
+    //        transform.rotationAngle = objAngle;
+    //        transform.rotationAxis = objAxis;
+    //        transform.translate = objTrans;
+    //        transform.updateMatrix();
+    //        engine.camera.setView();
+	//		// connect up the shader parameters: vertex position and projection/model matrices
+    //        engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, engine.gl.FLOAT, false, 0, 0);
+    //        engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
+    //        engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, engine.gl.FLOAT, false, 0, 0);
+    //        engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, engine.camera.projectionMatrix);
+    //        engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, engine.camera.viewMatrix);
+    //        engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, transform.modelMatrix);
+    //        engine.gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
+    //    } else {
+    //        engine.gl.clearColor(5.0, 0.0, 0.0, 1.0);
+    //        engine.gl.clear(engine.gl.COLOR_BUFFER_BIT);
+    //    }
+    //    const t = Date.now();
+    //    const fps = t -t0;
+    //    $("#saida_fps").text("dT da renderizacao = " + fps + "ms");
+    //    requestAnimationFrame(draw);
+    //}
 
     window.onload = function () {
         var canvas = document.getElementById("webglcanvas");
@@ -160,7 +155,7 @@
         } 
         createSquare(engine.gl);
         UpdateCameraEdits();
-        requestAnimationFrame(draw);
+        engine.render();
     }
     
     function UpdateCameraEdits() {
