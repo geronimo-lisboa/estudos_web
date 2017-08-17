@@ -21,6 +21,8 @@
 <script type="text/javascript">
     var engine = undefined;
 	
+	var testeShader = undefined;
+	
 	var transform = new ToyTransform();
     //O meu objeto
     var GlobalSquare = undefined;
@@ -153,6 +155,27 @@
         } catch (e) {
             alert("Unable to initialize WebGL. Your browser may not support it.");
         } 
+		var vertexShaderSource =
+    " precision highp float;\n" +
+        "    attribute vec3 vertexPos;\n" +
+        "    attribute vec4 vertexColor;\n" +
+        "    uniform mat4 modelMatrix;\n" +
+        "    uniform mat4 viewMatrix;\n" +
+        "    uniform mat4 projectionMatrix;\n" +
+        "    varying vec4 vColor;\n" +
+        "    void main(void) {\n" +
+        "        vColor = vertexColor;\n" +
+        "        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
+        "            vec4(vertexPos, 1.0);\n" +
+        "    }\n";
+var fragmentShaderSource =
+    " precision highp float;\n" +
+        "varying vec4 vColor;\n" +
+        "void main(void) {\n" +
+        "    // Return the pixel color: always output white\n" +
+        "    gl_FragColor = vColor;\n" +
+        "}\n";
+		testeShader = new ToyShader(engine,vertexShaderSource, fragmentShaderSource);
         createSquare(engine.gl);
         UpdateCameraEdits();
         engine.render();

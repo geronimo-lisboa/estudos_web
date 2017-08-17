@@ -45,12 +45,81 @@ function ToyTransform() {
         mat4.translate(this.modelMatrix, this.modelMatrix, [-this.translate[0], -this.translate[1], -this.translate[2]]);
     }
 }
+//A classe de criação de shader
+function ToyShader(toyEngine, vsSrc, fsSrc){
+	//Ref. pra engine.
+	this.engine = toyEngine;
+	//Compila um shader e o retorna
+	this.createShader = function(gl, str, type){
+		var shader = undefined;
+		if(type==="fragment")//Cria como fragment shader 
+			shader = gl.createShader(gl.FRAGMENT_SHADER);
+		if(type==="vertex")//Cria como vertex shader
+			shader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(shader, str);//Seta a fonte
+		gl.compileShader(shader);//compila
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)){//verifica erro
+			throw gl.getShaderInfoLog(shader);
+		}
+		return shader;
+	}
+	//A lista de atributos, na forma de "nome"-"id"
+	this.attributes = {};
+	//A lista de uniforms, na forma de "nome"-"id"
+	this.uniforms = {};
+	//Cria o programa a partir dos shaders e o retorna. No processo ele 
+	//popula a lista de atributos e uniformes.
+	this.createProgram = function(gl, vsId, fsId){
+		//cria o objeto
+		var shaderProgram = gl.createProgram();
+		//atacha os shaders
+		gl.attachShader(shaderProgram, vsId);
+		gl.attachShader(shaderProgram, fsId);
+		//linka o programa
+		gl.linkProgram(shaderProgram);
+		//verifica erro
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+			throw gl.getProgramInfoLog(shaderProgram);
+		}
+		//Pega os atributos e uniforms
+		const numAtributos = gl.getProgramParameter(shaderProgram, gl.ACTIVE_ATTRIBUTES);
+		for(var i=0; i<numAtributos; i++){
+			var attrInfo = gl.getActiveAttrib(shaderProgram, i);
+			var attrLoc = gl.getAttribLocation(shaderProgram, attrInfo.name);
+			this.attributes[attrInfo.name] = attrLoc;
+			console.log("atributo - "+attrInfo.name);
+		}
+		const numUniformes = gl.getProgramParameter(shaderProgram, gl.ACTIVE_UNIFORMS);
+		for(var i=0; i<numUniformes; i++){
+			var uniInfo = gl.getActiveUniform(shaderProgram, i);
+			var uniLoc = gl.getUniformLocation(shaderProgram, uniInfo.name);
+			this.uniforms[uniInfo.name] = uniLoc;
+			console.log("uniforme - "+uniInfo.name);
+		}
+		return shaderProgram;
+	}
+	//Onde guardo o codigo fonte do shader
+	this.vertexShaderSource = vsSrc;
+	//Onde guardo o codigo fonte do shader
+	this.fragmentShaderSource = fsSrc;
+	//Os ids do opengl
+	this.vertexShaderId = this.createShader(toyEngine.gl, this.vertexShaderSource, "vertex");
+	this.fragmentShaderId = this.createShader(toyEngine.gl, this.fragmentShaderSource, "fragment");
+	//o id do programa
+	this.programId = this.createProgram(toyEngine.gl, this.vertexShaderId, this.fragmentShaderId);
+}
 
 //O objeto 3d. Um objeto 3d tem os buffers necessários para ele existir, tem uma transformação e pode ter outros 
 //objetos pendurados a ele.
 function Toy3dObject() {
     //A transformação
     this.transform = new ToyTransform();
+	
+	this.vertexes = [];
+	this.colors = [];
+	this.vertexBuffer = undefined;
+	this.colorBuffer = undefined;
+	
     //Os objetos filhos
     this.children = [];
     //A função de renderização
