@@ -25,7 +25,6 @@
     //O meu objeto
     var GlobalSquare = undefined;
 
-    var modelMatrix;
     // Create the vertex data for a square to be drawn
     function createSquare(gl) {
         //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
@@ -123,21 +122,22 @@
             var objAxis = [GlobalSquare.rotation[0], GlobalSquare.rotation[1], GlobalSquare.rotation[2]];
             var objAngle = GlobalSquare.rotation[3];
             var objTrans = GlobalSquare.pos;
-            var identityMatrix = mat4.create();
-            modelMatrix = mat4.create();
-            mat4.identity(identityMatrix);
-            mat4.identity(modelMatrix);
-            mat4.translate(modelMatrix, identityMatrix, objTrans);
-            mat4.rotate(modelMatrix, modelMatrix, objAngle * 0.0174533, objAxis);
+
+            transform.pivot = [-0.5, 0.0, 0.0];
+            transform.rotationAngle = objAngle;
+            transform.rotationAxis = objAxis;
+            transform.translate = objTrans;
+            transform.updateMatrix();
+
 			
-			engine.camera.setView();
+            engine.camera.setView();
 			// connect up the shader parameters: vertex position and projection/model matrices
             engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexPositionAttribute, GlobalSquare.vertSize, engine.gl.FLOAT, false, 0, 0);
             engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, GlobalSquare.cBuffer);
             engine.gl.vertexAttribPointer(GlobalSquare.shaderVertexColorAttribute, 4, engine.gl.FLOAT, false, 0, 0);
             engine.gl.uniformMatrix4fv(GlobalSquare.shaderProjectionMatrixUniform, false, engine.camera.projectionMatrix);
             engine.gl.uniformMatrix4fv(GlobalSquare.shaderViewMatrixUniform, false, engine.camera.viewMatrix);
-            engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, modelMatrix);
+            engine.gl.uniformMatrix4fv(GlobalSquare.shaderModelMatrixUniform, false, transform.modelMatrix);
 
             engine.gl.drawArrays(GlobalSquare.primtype, 0, GlobalSquare.nVerts);
         } else {
