@@ -114,14 +114,18 @@ function ToyShader(toyEngine, vsSrc, fsSrc){
 function Toy3dObject() {
     //A transformação
     this.transform = new ToyTransform();
-	
+	//onde ficam os vertices 
 	this.vertexes = undefined;
+	//onde ficam as cores
 	this.colors = undefined;
+	//o vertex buffer (id)
 	this.vertexBuffer = undefined;
+	//o color buffer (id)
 	this.colorBuffer = undefined;
+	//se é TRIANGLE_STRIP ou TRANGLE
 	this.primtype = undefined;
-	this.shaderProgram = undefined;
-	
+	//O shader program.
+	this.shaderProgram = undefined;	
     //Os objetos filhos
     this.children = [];
     //A função de renderização
@@ -151,7 +155,62 @@ function Toy3dObject() {
             element.render(camera, this.transform);
         }.bind(this));
     };
+	//faz fetch do json dado. Quando estiver pronto, isReady ficará true
+	this.loadFromJSON = function(engine,nomeDoJson){
+		var self = this;
+		var result = fetch(nomeDoJson)
+		.then(response => {//Resolve ou rejeita a promessa de carga que foi feita
+          if (response.status === 200 || response.status === 0) {
+            return Promise.resolve(response);
+          } else {
+            return Promise.reject(new Error(response.statusText));
+		}})
+		  .then(response => {//Resposta é um json pro próximo método.
+                return response.json();
+            })
+			.then(function(data){
+				//O vertex buffer
+				self.vertexBuffer = engine.gl.createBuffer();
+				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.vertexBuffer);
+				self.vertexes = new Float32Array(data.geometry);
+				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.vertexes, engine.gl.STATIC_DRAW);
+				//O color buffer
+				self.colorBuffer = engine.gl.createBuffer();
+				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.colorBuffer);
+				self.colors = new Float32Array(data.color);
+				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.colors, engine.gl.STATIC_DRAW);
+				//O shader 
+				var vertexShaderSource =
+				" precision highp float;\n" +
+				"    attribute vec3 vertexPos;\n" +
+				"    attribute vec4 vertexColor;\n" +
+				"    uniform mat4 modelMatrix;\n" +
+				"    uniform mat4 viewMatrix;\n" +
+				"    uniform mat4 projectionMatrix;\n" +
+				"    varying vec4 vColor;\n" +
+				"    void main(void) {\n" +
+				"        vColor = vertexColor;\n" +
+				"        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
+				"            vec4(vertexPos, 1.0);\n" +
+				"    }\n";
+				var fragmentShaderSource =
+				" precision highp float;\n" +
+				"varying vec4 vColor;\n" +
+				"void main(void) {\n" +
+				"    // Return the pixel color: always output white\n" +
+				"    gl_FragColor = vColor;\n" +
+				"}\n";
+				self.shaderProgram = new ToyShader(engine, vertexShaderSource, fragmentShaderSource);	
+				self.primtype = engine.gl.TRIANGLES;
+				self.isReady = true;			
+			})
+			.catch(function(error){
+			  alert(error);	
+			});
+	}
+	//Se definido, o objeto está pronto.
 	this.isReady = undefined;
+	
 }
 //Minha engine de brinquedo para entender webgl e javascript
 //A forma de usar é: 1)Criar a classe usando uma canvas. 2)setar a viewport

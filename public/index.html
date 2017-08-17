@@ -20,73 +20,7 @@
 <script type="text/javascript" src="toyEngine.js"></script>
 <script type="text/javascript">
     var engine = undefined;
-	
-	var testeShader = undefined;
-	
-	var transform = new ToyTransform();
-    //O meu objeto
-    var GlobalSquare = undefined;
-
-    // Create the vertex data for a square to be drawn
-    function createSquare(gl) {
-        //Pede o arquivo que define meu objeto. Isso é uma operação assincrona,
-        //como todos os IOs em js
-        var result = fetch('testeObjeto.json')
-            .then(response => {//Resolve ou rejeita a promessa de carga que foi feita
-                if (response.status === 200 || response.status === 0) {
-                    return Promise.resolve(response);
-                } else {
-                    return Promise.reject(new Error(response.statusText));
-                }
-            })
-            .then(response => {//Resposta é um json pro próximo método.
-                return response.json();
-            })
-            .then(function (data) {
-				//O vertex buffer
-				engine.root.vertexBuffer = engine.gl.createBuffer();
-				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, engine.root.vertexBuffer);
-				engine.root.vertexes = new Float32Array(data.geometry);
-				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, engine.root.vertexes, engine.gl.STATIC_DRAW);
-				//O color buffer
-				engine.root.colorBuffer = engine.gl.createBuffer();
-				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, engine.root.colorBuffer);
-				engine.root.colors = new Float32Array(data.color);
-				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, engine.root.colors, engine.gl.STATIC_DRAW);
-				//O shader 
-				var vertexShaderSource =
-				" precision highp float;\n" +
-				"    attribute vec3 vertexPos;\n" +
-				"    attribute vec4 vertexColor;\n" +
-				"    uniform mat4 modelMatrix;\n" +
-				"    uniform mat4 viewMatrix;\n" +
-				"    uniform mat4 projectionMatrix;\n" +
-				"    varying vec4 vColor;\n" +
-				"    void main(void) {\n" +
-				"        vColor = vertexColor;\n" +
-				"        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
-				"            vec4(vertexPos, 1.0);\n" +
-				"    }\n";
-				var fragmentShaderSource =
-				" precision highp float;\n" +
-				"varying vec4 vColor;\n" +
-				"void main(void) {\n" +
-				"    // Return the pixel color: always output white\n" +
-				"    gl_FragColor = vColor;\n" +
-				"}\n";
-				engine.root.shaderProgram = new ToyShader(engine,vertexShaderSource, fragmentShaderSource);	
-				engine.root.primtype = engine.gl.TRIANGLES;
-				engine.root.isReady = true;
-                UpdateTranslate();
-                UpdateRotation();
-                return engine.root;
-            })
-            .catch(function (error) {
-                    alert(error);
-                }
-            );
-    }
-
+  
     function handleTextureLoaded(image, texture) {
         console.log("handleTextureLoaded, image = " + image);
         engine.gl.bindTexture(engine.gl.TEXTURE_2D, texture);
@@ -119,7 +53,8 @@
             alert("Unable to initialize WebGL. Your browser may not support it.");
         } 
 
-        createSquare(engine.gl);
+       	//createSquare(engine.gl);
+		engine.root.loadFromJSON(engine, "testeObjeto.json");
         UpdateCameraEdits();
         engine.render();
     }
