@@ -15,8 +15,8 @@
 <!-- Começo da Biblioteca de matrizes para o webgl-->
 <script src="gl-matrix.js"></script>
 <!-- Fim da Biblioteca de matrizes para o webgl-->
-<script type="text/javascript" src="opengl.js"></script>
-<script type="text/javascript" src="shader.js"></script>
+<!--<script type="text/javascript" src="opengl.js"></script>-->
+<!--<script type="text/javascript" src="shader.js"></script>-->
 <script type="text/javascript" src="toyEngine.js"></script>
 <script type="text/javascript">
     var engine = undefined;
@@ -53,7 +53,7 @@
                 var testeArr2 = new Float32Array(data.color);
                 gl.bufferData(gl.ARRAY_BUFFER, testeArr2, gl.STATIC_DRAW);
                 //O shader é inicializado aqui.
-                var shaderProgram = initShader(gl, vertexShaderSource, fragmentShaderSource);
+                var shaderProgram = undefined;//initShader(gl, vertexShaderSource, fragmentShaderSource);
                 var square = {
                     buffer: vertexBuffer,
                     cBuffer: colorBuffer,
@@ -176,7 +176,7 @@ var fragmentShaderSource =
         "    gl_FragColor = vColor;\n" +
         "}\n";
 		testeShader = new ToyShader(engine,vertexShaderSource, fragmentShaderSource);
-        createSquare(engine.gl);
+        //createSquare(engine.gl);
         UpdateCameraEdits();
         engine.render();
     }
