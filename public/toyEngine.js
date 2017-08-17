@@ -115,19 +115,28 @@ function Toy3dObject() {
     //A transformação
     this.transform = new ToyTransform();
 	
-	this.vertexes = [];
-	this.colors = [];
+	this.vertexes = undefined;
+	this.colors = undefined;
 	this.vertexBuffer = undefined;
 	this.colorBuffer = undefined;
+	this.primtype = undefined;
+	this.shaderProgram = undefined;
 	
     //Os objetos filhos
     this.children = [];
     //A função de renderização
-    this.render = function(camera, parentTranform) {
+    this.render = function(gl,camera, parentTranform) {
+		//seu render
+		if(this.isReady){
+		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+		   gl.useProgram(this.shaderProgram.programId);
+		}
+		//Render dos filhos
         this.children.forEach(function(element) {
             element.render(camera, this.transform);
         }.bind(this));
     };
+	this.isReady = undefined;
 }
 //Minha engine de brinquedo para entender webgl e javascript
 //A forma de usar é: 1)Criar a classe usando uma canvas. 2)setar a viewport
@@ -171,7 +180,7 @@ function ToyEngine(aCanvas) {
         const t0 = Date.now();
         engine.gl.clearColor(0.1, 0.0, 0.1, 1.0);
         engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
-        engine.root.render(engine.camera, undefined);
+        engine.root.render(self.gl, engine.camera, undefined);
         const t = Date.now();
         engine.tempoGasto = t - t0;
         requestAnimationFrame((ts) => {
