@@ -128,6 +128,15 @@ function Toy3dObject() {
 	this.shaderProgram = undefined;	
     //Os objetos filhos
     this.children = [];
+    //Uso essa função pra montar o shader a partir do texto no json, pois é
+    //o objeto que sabe como é seu shader.
+    this.assembleShaderSourceFromArrayString = function(strArray) {
+        var resultado = "";
+        for (var i = 0; i < strArray.length; i++) {
+            resultado += strArray[i] + '\n';
+        }
+        return resultado;
+    };
     //A função de renderização
     this.render = function(gl,camera, parentTranform) {
 		//seu render
@@ -180,26 +189,27 @@ function Toy3dObject() {
 				self.colors = new Float32Array(data.color);
 				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.colors, engine.gl.STATIC_DRAW);
 				//O shader 
-				var vertexShaderSource =
-				" precision highp float;\n" +
-				"    attribute vec3 vertexPos;\n" +
-				"    attribute vec4 vertexColor;\n" +
-				"    uniform mat4 modelMatrix;\n" +
-				"    uniform mat4 viewMatrix;\n" +
-				"    uniform mat4 projectionMatrix;\n" +
-				"    varying vec4 vColor;\n" +
-				"    void main(void) {\n" +
-				"        vColor = vertexColor;\n" +
-				"        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
-				"            vec4(vertexPos, 1.0);\n" +
-				"    }\n";
-				var fragmentShaderSource =
-				" precision highp float;\n" +
-				"varying vec4 vColor;\n" +
-				"void main(void) {\n" +
-				"    // Return the pixel color: always output white\n" +
-				"    gl_FragColor = vColor;\n" +
-				"}\n";
+                var vertexShaderSource = self.assembleShaderSourceFromArrayString(data.vertexShaderCode);
+		        var fragmentShaderSource = self.assembleShaderSourceFromArrayString(data.fragmentShaderCode);
+				//" precision highp float;\n" +
+				//"    attribute vec3 vertexPos;\n" +
+				//"    attribute vec4 vertexColor;\n" +
+				//"    uniform mat4 modelMatrix;\n" +
+				//"    uniform mat4 viewMatrix;\n" +
+				//"    uniform mat4 projectionMatrix;\n" +
+				//"    varying vec4 vColor;\n" +
+				//"    void main(void) {\n" +
+				//"        vColor = vertexColor;\n" +
+				//"        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
+				//"            vec4(vertexPos, 1.0);\n" +
+				//"    }\n";
+				//var fragmentShaderSource =
+				//" precision highp float;\n" +
+				//"varying vec4 vColor;\n" +
+				//"void main(void) {\n" +
+				//"    // Return the pixel color: always output white\n" +
+				//"    gl_FragColor = vColor;\n" +
+				//"}\n";
 				self.shaderProgram = new ToyShader(engine, vertexShaderSource, fragmentShaderSource);	
 				self.primtype = engine.gl.TRIANGLES;
 				self.isReady = true;			

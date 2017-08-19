@@ -136,5 +136,26 @@
   "vertexSize": 3,
   "colorSize": 4,
   "vertexBufferId": -1,
-  "colorBufferId": -1
+  "colorBufferId": -1,
+  "vertexShaderCode": [
+    " precision highp float;",
+    "    attribute vec3 vertexPos;",
+    "    attribute vec4 vertexColor;",
+    "    uniform mat4 modelMatrix;",
+    "    uniform mat4 viewMatrix;",
+    "    uniform mat4 projectionMatrix;",
+    "    varying vec4 vColor;",
+    "    void main(void) {",
+    "        vColor = vertexColor;",
+    "        gl_Position = projectionMatrix * viewMatrix * modelMatrix * ",
+    "            vec4(vertexPos, 1.0);",
+    "    }"
+  ],
+  "fragmentShaderCode": [
+    "precision highp float;",
+    "varying vec4 vColor;",
+    "void main(void) {",
+    "  // Return the pixel color: always output white",
+    "  gl_FragColor = vColor;",
+    "}\n"]
 }

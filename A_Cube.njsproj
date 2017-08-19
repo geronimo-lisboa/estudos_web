@@ -31,8 +31,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="public\gl-matrix.js" />
-    <Compile Include="public\opengl.js" />
-    <Compile Include="public\shader.js" />
     <Compile Include="server.js" />
     <Content Include="package.json" />
     <Content Include="public\index.html" />
