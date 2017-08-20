@@ -242,7 +242,7 @@ function ToyEngine(aCanvas) {
     this.initOpenGL = function () {
         console.log('init opengl');
         //Cria o contexto de webgl2
-        var _gl = this.canvas.getContext("webgl2");
+        var _gl = this.canvas.getContext("webgl");
         //Flags do contexto:
         _gl.enable(_gl.DEPTH_TEST);
         _gl.depthFunc(_gl.LESS);
