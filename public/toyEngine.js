@@ -109,6 +109,45 @@ function ToyShader(toyEngine, vsSrc, fsSrc){
 	this.programId = this.createProgram(toyEngine.gl, this.vertexShaderId, this.fragmentShaderId);
 }
 
+//O lugar onde guardo minhas texturas. Ele carrega as texturas para um dicionário nome-id
+function ToyTextureSource(gl) {
+    this.gl = gl;
+    //o dicionário
+    this.textureList = {};
+    //carrega a textura. No momento ela tem que ser obrigatoriamente no formato .bin 
+    //que o programa auxiliar em c++ gera, convertendo pngs pra .bin. Esse .bin é o
+    //rbg da imagem sem compressão ou cabeçalho.
+    this.loadTexture = function(gl, nomeDoArquivo) {
+        var self = this;
+        var result = fetch(nomeDoArquivo)
+            .then(response => {
+                if (response.status === 200 || response.status === 0) {
+                    return Promise.resolve(response);
+                } else {
+                    return Promise.reject(new Error(response.statusText));
+                }
+            }) //Fim do 1o then
+            .then(response => {
+                return response.arrayBuffer();
+            }) //fim do 2o then
+            .then(function (mybuffer) {//Aqui eu tenho o buffer, mas da forma como está eu não posso usar
+                var localArray = new Uint8Array(mybuffer);//Agora está num formato usável.
+                var texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,256,256,0, gl.RGB, gl.UNSIGNED_BYTE, localArray);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                self.textureList[nomeDoArquivo] = texture;
+                console.log("tex " + texture + " carregada");
+                gl.bindTexture(gl.TEXTURE_2D, null);
+            }) //Fim do 3o then
+            .catch(function(error) {
+                alert(error);
+            });//Fim da cadeia de thens
+    };
+//Carrega manualmente uma textura
+    this.loadTexture(gl, "marcador.bin");
+}
+
 //O objeto 3d. Um objeto 3d tem os buffers necessários para ele existir, tem uma transformação e pode ter outros 
 //objetos pendurados a ele.
 function Toy3dObject() {
@@ -117,17 +156,25 @@ function Toy3dObject() {
 	//onde ficam os vertices 
 	this.vertexes = undefined;
 	//onde ficam as cores
-	this.colors = undefined;
+    this.colors = undefined;
+    //onde ficam as coordenadas de textura
+    this.textureCoordinates;
 	//o vertex buffer (id)
 	this.vertexBuffer = undefined;
 	//o color buffer (id)
-	this.colorBuffer = undefined;
+    this.colorBuffer = undefined;
+    //tex coord buffer (id)
+    this.texCooordBuffer = undefined;
 	//se é TRIANGLE_STRIP ou TRANGLE
 	this.primtype = undefined;
 	//O shader program.
 	this.shaderProgram = undefined;	
     //Os objetos filhos
     this.children = [];
+    //O nome da textura 
+    this.textureName = undefined;
+    //O objeto de textura
+    this.textureObject = undefined;
     //Uso essa função pra montar o shader a partir do texto no json, pois é
     //o objeto que sabe como é seu shader.
     this.assembleShaderSourceFromArrayString = function(strArray) {
@@ -146,18 +193,25 @@ function Toy3dObject() {
 		   gl.useProgram(this.shaderProgram.programId);
 		   //ativa as arrays que vão receber os atributos
 		   gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexPos"]);
-		   gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexColor"]);
+           gl.enableVertexAttribArray(this.shaderProgram.attributes["vertexColor"]);
+		   gl.enableVertexAttribArray(this.shaderProgram.attributes["textureCoordinate"]);
 		   //Atualiza a transformação
 		   this.transform.updateMatrix();
            gl.uniformMatrix4fv(this.shaderProgram.uniforms["projectionMatrix"], false, camera.projectionMatrix);
 		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["viewMatrix"], false, camera.viewMatrix);
-		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["modelMatrix"], false, this.transform.modelMatrix);		   
-		   //Liga os buffers aos atributos no vertex shader
+           gl.uniformMatrix4fv(this.shaderProgram.uniforms["modelMatrix"], false, this.transform.modelMatrix);
+           //seta a textura
+               gl.activeTexture(gl.TEXTURE0);
+               gl.bindTexture(gl.TEXTURE_2D, this.textureObject);
+               gl.uniform1i(this.shaderProgram.uniforms["texture"], 0);
+ 		   //Liga os buffers aos atributos no vertex shader
 		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 		   gl.vertexAttribPointer(this.shaderProgram.attributes["vertexPos"], 3, gl.FLOAT, false, 0, 0);
            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
            gl.vertexAttribPointer(this.shaderProgram.attributes["vertexColor"], 4, gl.FLOAT, false, 0, 0);
-		   //Desenha
+	       gl.bindBuffer(gl.ARRAY_BUFFER, this.texCooordBuffer);
+		   gl.vertexAttribPointer(this.shaderProgram.attributes["textureCoordinate"], 2, gl.FLOAT, false, 0, 0);
+           //Desenha
 		   gl.drawArrays(this.primtype, 0, this.vertexes.length/3);
 		}
 		//Render dos filhos
@@ -165,29 +219,6 @@ function Toy3dObject() {
             element.render(camera, this.transform);
         }.bind(this));
     };
-    //
-    this.testeLoadImage = function () {
-        var localImage = new Image();
-        localImage.onload = function () {
-            let localCanvas = document.createElement("canvas");
-            localCanvas.width = localImage.width;
-            localCanvas.height = localImage.height;
-            // Copy the image contents to the canvas
-            var ctx = localCanvas.getContext("2d");
-            ctx.drawImage(localImage, 256, 256);
-
-            var imgData = ctx.getImageData(0, 0, 255, 255);
-            var pix = imgData.data;
-            // Loop over each pixel and invert the color.
-            for (var i = 0, n = pix.length; i < n; i += 4) {
-                pix[i  ] = 255 - pix[i  ]; // red
-                pix[i + 1] = 255 - pix[i + 1]; // green
-                pix[i + 2] = 255 - pix[i + 2]; // blue
-                pix[i + 3] = 255 - pix[i + 3]; // blue
-            }
-        }
-        localImage.src = 'marcador.png';
-    };//fim da função
 	//faz fetch do json dado. Quando estiver pronto, isReady ficará true
 	this.loadFromJSON = function(engine,nomeDoJson){
 		var self = this;
@@ -201,7 +232,10 @@ function Toy3dObject() {
 		  .then(response => {//Resposta é um json pro próximo método.
                 return response.json();
             })
-			.then(function(data){
+          .then(function(data) {
+                //Pega a textura, carregada pelo texture controller existente na engine.
+                self.textureName = data.textureName;
+		        self.textureObject = engine.textureController.textureList[self.textureName];
 				//O vertex buffer
 				self.vertexBuffer = engine.gl.createBuffer();
 				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.vertexBuffer);
@@ -211,15 +245,17 @@ function Toy3dObject() {
 				self.colorBuffer = engine.gl.createBuffer();
 				engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.colorBuffer);
 				self.colors = new Float32Array(data.color);
-				engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.colors, engine.gl.STATIC_DRAW);
+                engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.colors, engine.gl.STATIC_DRAW);
+                //O tex coord buffer
+		        self.texCooordBuffer = engine.gl.createBuffer();
+                engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.texCoordBuffer);
+                self.textureCoordinates = new Float32Array(data.textureCoords);
+		        engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.textureCoordinates, engine.gl.STATIC_DRAW);
 				//O shader 
                 var vertexShaderSource = self.assembleShaderSourceFromArrayString(data.vertexShaderCode);
 		        var fragmentShaderSource = self.assembleShaderSourceFromArrayString(data.fragmentShaderCode);
 				self.shaderProgram = new ToyShader(engine, vertexShaderSource, fragmentShaderSource);	
                 self.primtype = engine.gl.TRIANGLES;
-
-		        self.testeLoadImage();
-
 				self.isReady = true;			
 			})
 			.catch(function(error){
@@ -238,6 +274,8 @@ function ToyEngine(aCanvas) {
     this.canvas = aCanvas;
     //A câmera (ToyCamera).
     this.camera = new ToyCamera();
+    //A fonte da textura
+    this.textureController = undefined;
     //Função que inicia o opengl. Cria o contexto e seta a função de profundidade
     this.initOpenGL = function () {
         console.log('init opengl');
@@ -251,7 +289,8 @@ function ToyEngine(aCanvas) {
             function (event) {
             event.preventDefault();
         },
-            false);
+        false);
+        this.textureController = new ToyTextureSource(_gl);
         return _gl;
     };
     //Seta a viewport do opengl para o tamanho da canvas

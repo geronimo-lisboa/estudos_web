@@ -132,6 +132,7 @@
 1.0, 0.0
 
   ],
+  "textureName":"marcador.bin",
   "numVertices": 36,
   "vertexSize": 3,
   "colorSize": 4,
@@ -141,21 +142,26 @@
     " precision highp float;",
     "    attribute vec3 vertexPos;",
     "    attribute vec4 vertexColor;",
+    "    attribute vec2 textureCoordinate;",
     "    uniform mat4 modelMatrix;",
     "    uniform mat4 viewMatrix;",
     "    uniform mat4 projectionMatrix;",
     "    varying vec4 vColor;",
+    "    varying vec2 vTc;",
     "    void main(void) {",
     "        vColor = vertexColor;",
     "        gl_Position = projectionMatrix * viewMatrix * modelMatrix * ",
     "            vec4(vertexPos, 1.0);",
+    "        vTc = textureCoordinate;",
     "    }"
   ],
   "fragmentShaderCode": [
     "precision highp float;",
+    "uniform sampler2D texture;",
     "varying vec4 vColor;",
+    "varying vec2 vTc;",
     "void main(void) {",
-    "  // Return the pixel color: always output white",
-    "  gl_FragColor = vColor;",
+    "  gl_FragColor = texture2D(texture, vTc);",
+    "  gl_FragColor = gl_FragColor * vColor;",
     "}\n"]
 }
