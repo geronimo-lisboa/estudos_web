@@ -137,6 +137,7 @@ function Toy3dObject() {
         }
         return resultado;
     };
+   
     //A função de renderização
     this.render = function(gl,camera, parentTranform) {
 		//seu render
@@ -164,6 +165,29 @@ function Toy3dObject() {
             element.render(camera, this.transform);
         }.bind(this));
     };
+    //
+    this.testeLoadImage = function () {
+        var localImage = new Image();
+        localImage.onload = function () {
+            let localCanvas = document.createElement("canvas");
+            localCanvas.width = localImage.width;
+            localCanvas.height = localImage.height;
+            // Copy the image contents to the canvas
+            var ctx = localCanvas.getContext("2d");
+            ctx.drawImage(localImage, 256, 256);
+
+            var imgData = ctx.getImageData(0, 0, 255, 255);
+            var pix = imgData.data;
+            // Loop over each pixel and invert the color.
+            for (var i = 0, n = pix.length; i < n; i += 4) {
+                pix[i  ] = 255 - pix[i  ]; // red
+                pix[i + 1] = 255 - pix[i + 1]; // green
+                pix[i + 2] = 255 - pix[i + 2]; // blue
+                pix[i + 3] = 255 - pix[i + 3]; // blue
+            }
+        }
+        localImage.src = 'marcador.png';
+    };//fim da função
 	//faz fetch do json dado. Quando estiver pronto, isReady ficará true
 	this.loadFromJSON = function(engine,nomeDoJson){
 		var self = this;
@@ -191,27 +215,11 @@ function Toy3dObject() {
 				//O shader 
                 var vertexShaderSource = self.assembleShaderSourceFromArrayString(data.vertexShaderCode);
 		        var fragmentShaderSource = self.assembleShaderSourceFromArrayString(data.fragmentShaderCode);
-				//" precision highp float;\n" +
-				//"    attribute vec3 vertexPos;\n" +
-				//"    attribute vec4 vertexColor;\n" +
-				//"    uniform mat4 modelMatrix;\n" +
-				//"    uniform mat4 viewMatrix;\n" +
-				//"    uniform mat4 projectionMatrix;\n" +
-				//"    varying vec4 vColor;\n" +
-				//"    void main(void) {\n" +
-				//"        vColor = vertexColor;\n" +
-				//"        gl_Position = projectionMatrix * viewMatrix * modelMatrix * \n" +
-				//"            vec4(vertexPos, 1.0);\n" +
-				//"    }\n";
-				//var fragmentShaderSource =
-				//" precision highp float;\n" +
-				//"varying vec4 vColor;\n" +
-				//"void main(void) {\n" +
-				//"    // Return the pixel color: always output white\n" +
-				//"    gl_FragColor = vColor;\n" +
-				//"}\n";
 				self.shaderProgram = new ToyShader(engine, vertexShaderSource, fragmentShaderSource);	
-				self.primtype = engine.gl.TRIANGLES;
+                self.primtype = engine.gl.TRIANGLES;
+
+		        self.testeLoadImage();
+
 				self.isReady = true;			
 			})
 			.catch(function(error){
