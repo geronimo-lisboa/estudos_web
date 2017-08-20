@@ -145,6 +145,7 @@ function ToyTextureSource(gl) {
             });//Fim da cadeia de thens
     };
 //Carrega manualmente uma textura
+this.loadTexture(gl, "teste.bin");
     this.loadTexture(gl, "marcador.bin");
 }
 
