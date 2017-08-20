@@ -164,7 +164,7 @@ function Toy3dObject() {
 	//o color buffer (id)
     this.colorBuffer = undefined;
     //tex coord buffer (id)
-    this.texCooordBuffer = undefined;
+    this.texCoordBuffer = undefined;
 	//se é TRIANGLE_STRIP ou TRANGLE
 	this.primtype = undefined;
 	//O shader program.
@@ -186,7 +186,7 @@ function Toy3dObject() {
     };
    
     //A função de renderização
-    this.render = function(gl,camera, parentTranform) {
+    this.render = function(engine,gl,camera, parentTranform) {
 		//seu render
 		if(this.isReady){
 		   //Bind do shader
@@ -201,22 +201,26 @@ function Toy3dObject() {
 		   gl.uniformMatrix4fv(this.shaderProgram.uniforms["viewMatrix"], false, camera.viewMatrix);
            gl.uniformMatrix4fv(this.shaderProgram.uniforms["modelMatrix"], false, this.transform.modelMatrix);
            //seta a textura
+           if (!this.textureObject)//A textura ainda está indisponivel? se sim, tenta pegá-la
+                this.textureObject = engine.textureController.textureList[this.textureName];
+           if (this.textureObject) {//Se a textura está disponivel, passa-a pro shader
                gl.activeTexture(gl.TEXTURE0);
                gl.bindTexture(gl.TEXTURE_2D, this.textureObject);
-               gl.uniform1i(this.shaderProgram.uniforms["texture"], 0);
+               gl.uniform1i(this.shaderProgram.uniforms["texture"], 0);               
+           }
  		   //Liga os buffers aos atributos no vertex shader
 		   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 		   gl.vertexAttribPointer(this.shaderProgram.attributes["vertexPos"], 3, gl.FLOAT, false, 0, 0);
            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
            gl.vertexAttribPointer(this.shaderProgram.attributes["vertexColor"], 4, gl.FLOAT, false, 0, 0);
-	       gl.bindBuffer(gl.ARRAY_BUFFER, this.texCooordBuffer);
+	       gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
 		   gl.vertexAttribPointer(this.shaderProgram.attributes["textureCoordinate"], 2, gl.FLOAT, false, 0, 0);
            //Desenha
 		   gl.drawArrays(this.primtype, 0, this.vertexes.length/3);
 		}
 		//Render dos filhos
         this.children.forEach(function(element) {
-            element.render(camera, this.transform);
+            element.render(engine, camera, this.transform);
         }.bind(this));
     };
 	//faz fetch do json dado. Quando estiver pronto, isReady ficará true
@@ -247,7 +251,7 @@ function Toy3dObject() {
 				self.colors = new Float32Array(data.color);
                 engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.colors, engine.gl.STATIC_DRAW);
                 //O tex coord buffer
-		        self.texCooordBuffer = engine.gl.createBuffer();
+		        self.texCoordBuffer = engine.gl.createBuffer();
                 engine.gl.bindBuffer(engine.gl.ARRAY_BUFFER, self.texCoordBuffer);
                 self.textureCoordinates = new Float32Array(data.textureCoords);
 		        engine.gl.bufferData(engine.gl.ARRAY_BUFFER, self.textureCoordinates, engine.gl.STATIC_DRAW);
@@ -311,7 +315,7 @@ function ToyEngine(aCanvas) {
         const t0 = Date.now();
         engine.gl.clearColor(0.1, 0.0, 0.1, 1.0);
         engine.gl.clear(engine.gl.COLOR_BUFFER_BIT | engine.gl.DEPTH_BUFFER_BIT);
-        engine.root.render(self.gl, engine.camera, undefined);
+        engine.root.render(self, self.gl, engine.camera, undefined);
         const t = Date.now();
         engine.tempoGasto = t - t0;
         requestAnimationFrame((ts) => {
