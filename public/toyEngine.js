@@ -136,7 +136,7 @@ function ToyTextureSource(gl) {
                 gl.bindTexture(gl.TEXTURE_2D, texture);
 				//Esse aqui n funciona
                 //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,256,256,0, gl.RGB, gl.UNSIGNED_BYTE, localArray);
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, $("#teste")[0]);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, $("#teste")[0]);//Esse aqui funciona
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 				gl.generateMipmap(gl.TEXTURE_2D);
