@@ -161,7 +161,6 @@
     "varying vec4 vColor;",
     "varying vec2 vTc;",
     "void main(void) {",
-    "  gl_FragColor = texture2D(texture, vTc);",
-    "  gl_FragColor = gl_FragColor * vColor;",
+    "  gl_FragColor = vec4 (texture2D(texture, vTc));",
     "}\n"]
 }

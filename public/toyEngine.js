@@ -134,8 +134,12 @@ function ToyTextureSource(gl) {
                 var localArray = new Uint8Array(mybuffer);//Agora está num formato usável.
                 var texture = gl.createTexture();
                 gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,256,256,0, gl.RGB, gl.UNSIGNED_BYTE, localArray);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				//Esse aqui n funciona
+                //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB,256,256,0, gl.RGB, gl.UNSIGNED_BYTE, localArray);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, $("#teste")[0]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+				gl.generateMipmap(gl.TEXTURE_2D);
                 self.textureList[nomeDoArquivo] = texture;
                 console.log("tex " + texture + " carregada");
                 gl.bindTexture(gl.TEXTURE_2D, null);
@@ -145,7 +149,6 @@ function ToyTextureSource(gl) {
             });//Fim da cadeia de thens
     };
 //Carrega manualmente uma textura
-this.loadTexture(gl, "teste.bin");
     this.loadTexture(gl, "marcador.bin");
 }
 
