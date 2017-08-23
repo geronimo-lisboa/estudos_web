@@ -53,9 +53,10 @@
             alert("Unable to initialize WebGL. Your browser may not support it.");
         } 
 
-       	//createSquare(engine.gl);
 		engine.root.loadFromJSON(engine, "testeObjeto.json");
         UpdateCameraEdits();
+		UpdateRotation();
+		UpdateTranslate();
         engine.render();
     }
     
@@ -79,11 +80,12 @@
     }
 
     function SetProjecao() {
+		 
         let tipo = $("#cmbProjecao").val();
         if (tipo==="Perspectiva") {
-            mat4.perspective(projectionMatrix, 45.0, 1.0, 0.1, 100.0);
+            engine.camera.usePerspective();
         } else if (tipo === "Ortográfica") {
-            mat4.ortho(projectionMatrix, -2, 2, -2, 2, 0.1, 25.0);
+			engine.camera.useOrtho();
         }
     }
 
@@ -172,8 +174,8 @@
         <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-color--amber-100">
             2)Controlar a cena usando os controles na tela - FEITO
         </div>
-        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
-            3)Texturas 
+        <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-color--amber-100">
+            3)Texturas - FEITO
         </div>
         <div class="mdl-shadow--2dp mdl-cell mdl-cell--12-col">
             4)Iluminação
@@ -197,7 +199,7 @@
         <div id="saida_fps" class="mdl-cell mdl-shadow--2dp">FPS: </div>
     </div>
 </div>
-<img src="marcador.png" id="teste"/>
+<!-- <img src="marcador.png" id="teste"/> -->
 </body>
 
 </html>
